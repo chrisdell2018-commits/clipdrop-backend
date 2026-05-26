@@ -1,0 +1,5 @@
+clipdrop-backend
+node_modules/
+uploads/
+processed/
+.env
