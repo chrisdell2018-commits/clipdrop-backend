@@ -42,7 +42,7 @@ app.use("/api/auth", authRoutes);
 // ─── Protected Routes ────────────────────────────────────────────────────────
 app.use("/api/upload", authMiddleware, uploadRoutes);
 app.use("/api/jobs", authMiddleware, jobRoutes);
-app.use("/api/platforms", platformRoutes);
+app.use("/api/platforms", authMiddleware, platformRoutes);
 
 // ─── Error Handler (must be last) ────────────────────────────────────────────
 app.use(errorHandler);
