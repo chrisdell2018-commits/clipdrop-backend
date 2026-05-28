@@ -4,7 +4,7 @@ const db = require("../utils/db");
 const router = express.Router();
 
 // ─── GET /api/platforms  ─── Get user's connected platforms ──────────────────
-router.get("/", async (req, res) => {
+router.get("/",  authMiddleware, async (req, res) => {
   const result = await db.query(
     `SELECT platform, platform_username, platform_user_id, token_expires, created_at
      FROM platform_tokens WHERE user_id = $1`,
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
 });
 
 // ─── DELETE /api/platforms/:platform  ─── Disconnect a platform ──────────────
-router.delete("/:platform", async (req, res) => {
+router.delete("/:platform", authMiddleware, async (req, res) => {
   const { platform } = req.params;
   await db.query(
     "DELETE FROM platform_tokens WHERE user_id = $1 AND platform = $2",
@@ -41,7 +41,7 @@ router.delete("/:platform", async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── YOUTUBE ──────────────────────────────────────────────────────────────────
-router.get("/youtube/connect", (req, res) => {
+router.get("/youtube/connect", authMiddleware, (req, res) => {
   const { google } = require("googleapis");
   const oauth2Client = new google.auth.OAuth2(
     process.env.YOUTUBE_CLIENT_ID,
@@ -61,6 +61,7 @@ router.get("/youtube/connect", (req, res) => {
 router.get("/youtube/callback", async (req, res) => {
   const { code, state: userId } = req.query;
   if (!code) return res.status(400).json({ error: "No code received" });
+  if (!userId) return res.redirect(`${process.env.FRONTEND_URL}?error=missing_state`);
 
   const { google } = require("googleapis");
   const oauth2Client = new google.auth.OAuth2(
@@ -89,7 +90,7 @@ router.get("/youtube/callback", async (req, res) => {
 });
 
 // ── TIKTOK ───────────────────────────────────────────────────────────────────
-router.get("/tiktok/connect", (req, res) => {
+router.get("/tiktok/connect", authMiddleware, (req, res) => {
   const scope = "user.info.basic,video.upload,video.publish";
   const url = `https://www.tiktok.com/v2/auth/authorize/`
     + `?client_key=${process.env.TIKTOK_CLIENT_ID}`
@@ -130,7 +131,7 @@ router.get("/tiktok/callback", async (req, res) => {
 });
 
 // ── META (Instagram + Facebook) ───────────────────────────────────────────────
-router.get("/meta/connect", (req, res) => {
+router.get("/meta/connect",  authMiddleware, (req, res) => {
   const scope = "pages_manage_posts,instagram_basic,instagram_content_publish,pages_read_engagement";
   const url = `https://www.facebook.com/v18.0/dialog/oauth`
     + `?client_id=${process.env.META_APP_ID}`
@@ -173,7 +174,7 @@ router.get("/meta/callback", async (req, res) => {
 });
 
 // ─── POST /api/platforms/publish  ─── Manually trigger publish for an upload ──
-router.post("/publish", async (req, res) => {
+router.post("/publish",  authMiddleware, async (req, res) => {
   const { uploadId, platforms } = req.body;
 
   if (!uploadId) return res.status(400).json({ error: "uploadId is required" });

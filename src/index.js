@@ -43,9 +43,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/upload", authMiddleware, uploadRoutes);
 app.use("/api/jobs", authMiddleware, jobRoutes);
 app.use("/api/platforms", platformRoutes);
-app.use("/api/platforms/youtube/callback", platformRoutes);
-app.use("/api/platforms/tiktok/callback", platformRoutes);
-app.use("/api/platforms/meta/callback", platformRoutes);
+
 
 // ─── Error Handler (must be last) ────────────────────────────────────────────
 app.use(errorHandler);
